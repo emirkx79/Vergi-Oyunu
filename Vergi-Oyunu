@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Vergi Oyunu (Kayıtlı)</title>
+<style>
+    body {
+    font-family: Arial;
+    background: url("https://picsum.photos/1920/1080");
+    background-size: cover;
+    background-position: center;
+    color: white;
+    text-align: center;
+    padding: 20px;
+}
+    }
+    .box {
+        background: #1f2937;
+        padding: 20px;
+        border-radius: 12px;
+        max-width: 420px;
+        margin: auto;
+    }
+    button {
+        padding: 12px;
+        margin: 6px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        background: white;
+        color: black;
+    }
+</style>
+</head>
+<body>
+
+<h1>💰 Vergi Oyunu (Kayıtlı)</h1>
+
+<div class="box">
+    <p id="para"></p>
+    <p id="vergi"></p>
+    <p id="gelir"></p>
+    <p id="pasif"></p>
+
+    <button onclick="tikla()">Para Kazan</button>
+
+    <h3>Geliştirmeler</h3>
+    <button onclick="gelistirTiklama()">Tıklama +1 (50 TL)</button>
+    <button onclick="gelistirPasif()">Pasif +1/sn (100 TL)</button>
+
+    <h3>Vergi</h3>
+    <button onclick="vergiOde()">Vergi Öde</button>
+
+    <h3>Ayarlar</h3>
+    <button onclick="sifirla()">Oyunu Sıfırla</button>
+</div>
+
+<script>
+let para = 0;
+let tiklamaGeliri = 1;
+let pasifGelir = 0;
+let birikenVergi = 0;
+let vergiOrani = 0.10;
+
+// 📦 KAYDET
+function kaydet() {
+    localStorage.setItem("oyun", JSON.stringify({
+        para,
+        tiklamaGeliri,
+        pasifGelir,
+        birikenVergi
+    }));
+}
+
+// 📥 YÜKLE
+function yukle() {
+    let veri = localStorage.getItem("oyun");
+    if (veri) {
+        let oyun = JSON.parse(veri);
+        para = oyun.para;
+        tiklamaGeliri = oyun.tiklamaGeliri;
+        pasifGelir = oyun.pasifGelir;
+        birikenVergi = oyun.birikenVergi;
+    }
+}
+
+function guncelle() {
+    document.getElementById("para").innerText = "Para: " + Math.floor(para) + " TL";
+    document.getElementById("vergi").innerText = "Vergi: " + Math.floor(birikenVergi) + " TL";
+    document.getElementById("gelir").innerText = "Tıklama: " + tiklamaGeliri;
+    document.getElementById("pasif").innerText = "Pasif: " + pasifGelir + "/sn";
+}
+
+// 💣 Vergi + ceza
+function vergiHesapla(kazanc) {
+    birikenVergi += kazanc * vergiOrani;
+
+    if (birikenVergi > 500) {
+        let ceza = birikenVergi * 2;
+
+        if (para >= ceza) {
+            para -= ceza;
+        } else {
+            para = 0;
+        }
+
+        alert("🚨 Ceza ödedin: " + Math.floor(ceza) + " TL");
+        birikenVergi = 0;
+    }
+}
+
+// 🎮 Oyun
+function tikla() {
+    para += tiklamaGeliri;
+    vergiHesapla(tiklamaGeliri);
+    guncelle();
+    kaydet();
+}
+
+function gelistirTiklama() {
+    if (para >= 50) {
+        para -= 50;
+        tiklamaGeliri++;
+        guncelle();
+        kaydet();
+    }
+}
+
+function gelistirPasif() {
+    if (para >= 100) {
+        para -= 100;
+        pasifGelir++;
+        guncelle();
+        kaydet();
+    }
+}
+
+function vergiOde() {
+    if (para >= birikenVergi) {
+        para -= birikenVergi;
+        birikenVergi = 0;
+        alert("✔ Vergi ödendi");
+        guncelle();
+        kaydet();
+    }
+}
+
+// 🗑️ Sıfırla
+function sifirla() {
+    localStorage.removeItem("oyun");
+    location.reload();
+}
+
+// ⏱️ Pasif gelir
+setInterval(() => {
+    para += pasifGelir;
+    vergiHesapla(pasifGelir);
+    guncelle();
+    kaydet();
+}, 1000);
+
+// Başlangıç
+yukle();
+guncelle();
+</script>
+
+</body>
+</html>
